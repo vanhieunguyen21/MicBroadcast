@@ -7,7 +7,7 @@ public class Client extends Thread {
 
     private MulticastSocket socket = null;
     private int port = 8888;
-    private InetAddress IP;
+    private InetAddress group;
 
     public Client() {
         try {
@@ -16,7 +16,7 @@ public class Client extends Thread {
             speaker.open(format);
 
             socket = new MulticastSocket(port);
-            IP = InetAddress.getByName("224.0.0.4");
+            group = InetAddress.getByName("224.0.0.4");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -27,11 +27,10 @@ public class Client extends Thread {
         try {
             speaker.start();
             byte[] data = new byte[1024];
-            socket.joinGroup(IP);
+            socket.joinGroup(group);
             while (true) {
                 DatagramPacket packet = new DatagramPacket(data, 1024);
                 socket.receive(packet);
-                System.out.println(packet.getLength());
                 speaker.write(packet.getData(), 0, packet.getLength());
             }
         } catch (Exception e) {

@@ -42,5 +42,11 @@ public class MicPlayer extends Thread{
 
         Client client1 = new Client();
         client1.start();
+
+        Client client2 = new Client();
+        client2.start();
+
+        Client client3 = new Client();
+        client3.start();
     }
 }

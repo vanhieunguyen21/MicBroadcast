@@ -8,8 +8,8 @@ public class Multicaster {
 
     public Multicaster() {
         try {
-            socket = new DatagramSocket(port);
             IP = InetAddress.getByName("224.0.0.4");
+            socket = new DatagramSocket();
         } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();
         }
