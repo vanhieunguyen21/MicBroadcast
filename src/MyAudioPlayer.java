@@ -81,7 +81,7 @@ public class MyAudioPlayer extends Thread {
         MyAudioPlayer myAudioPlayer = new MyAudioPlayer(server);
         myAudioPlayer.start();
 
-        // Start client a little late
+        // Start client a little lates
 //        Thread.sleep(5000);
         MyAudioClient client = new MyAudioClient(10000);
         client.start();
