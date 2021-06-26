@@ -1,15 +1,13 @@
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
-
 import javax.sound.sampled.*;
 
 public class MicPlayer extends Thread{
     private AudioFormat format = new AudioFormat(8000.0f, 16, 1, true, true);
     private TargetDataLine microphone;
     //SourceDataLine speaker;
-    private Multicaster multicaster;
+    private Server server;
 
-    public MicPlayer(Multicaster multicaster) {
-        this.multicaster = multicaster;
+    public MicPlayer(Server server) {
+        this.server = server;
         try {
             DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
             microphone = (TargetDataLine) AudioSystem.getLine(info);
@@ -30,23 +28,24 @@ public class MicPlayer extends Thread{
 //        speaker.start();
         while (true) {
             int byteRead = microphone.read(buffer, 0, 1024);
-            multicaster.send(buffer, byteRead);
+            server.send(buffer, byteRead);
 //            speaker.write(buffer, 0, byteRead);
         }
     }
 
     public static void main(String[] args) throws InterruptedException {
-        Multicaster multicaster = new Multicaster();
-        MicPlayer micPlayer = new MicPlayer(multicaster);
+        Server server = new Server();
+        server.start();
+        MicPlayer micPlayer = new MicPlayer(server);
         micPlayer.start();
 
-        Client client1 = new Client();
+        Client client1 = new Client(8900);
         client1.start();
 
-        Client client2 = new Client();
+        Client client2 = new Client(8901);
         client2.start();
 
-        Client client3 = new Client();
+        Client client3 = new Client(8902);
         client3.start();
     }
 }

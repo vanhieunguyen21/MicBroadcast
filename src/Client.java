@@ -1,22 +1,31 @@
 import javax.sound.sampled.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.*;
 
 public class Client extends Thread {
     private AudioFormat format = new AudioFormat(8000.0f, 16, 1, true, true);
     private SourceDataLine speaker;
 
-    private MulticastSocket socket = null;
-    private int port = 8888;
-    private InetAddress group;
+    private Socket tcp;
+    private int serverPort = 8889;
 
-    public Client() {
+    private DatagramSocket udp;
+    private int udpPort;
+
+    public Client(int udpPort) {
+        this.udpPort = udpPort;
         try {
             DataLine.Info dataLineInfo = new DataLine.Info(SourceDataLine.class, format);
             speaker = (SourceDataLine) AudioSystem.getLine(dataLineInfo);
             speaker.open(format);
 
-            socket = new MulticastSocket(port);
-            group = InetAddress.getByName("224.0.0.4");
+            tcp = new Socket(InetAddress.getByName("localhost"), serverPort);
+            ObjectOutputStream oos = new ObjectOutputStream(tcp.getOutputStream());
+            System.out.println("Sending data port");
+            oos.writeObject(udpPort);
+
+            udp = new DatagramSocket(udpPort);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -27,10 +36,9 @@ public class Client extends Thread {
         try {
             speaker.start();
             byte[] data = new byte[1024];
-            socket.joinGroup(group);
             while (true) {
                 DatagramPacket packet = new DatagramPacket(data, 1024);
-                socket.receive(packet);
+                udp.receive(packet);
                 speaker.write(packet.getData(), 0, packet.getLength());
             }
         } catch (Exception e) {
