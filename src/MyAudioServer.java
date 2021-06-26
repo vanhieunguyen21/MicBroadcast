@@ -1,23 +1,26 @@
+import javax.sound.sampled.AudioFormat;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class Server extends Thread {
+public class MyAudioServer extends Thread {
     // Socket to handle clients
     private ServerSocket serverSocket;
     private final int serverPort = 8889;
     private final int udpPort = 9000;
     private List<ClientAddress> clients = new ArrayList<>();
     private HashMap<InetAddress, Integer> addressPortMap = new HashMap<>();
+    private AudioFormat format;
 
     private DatagramSocket socket = null;
 
-    public Server() {
+    public MyAudioServer() {
         try {
             serverSocket = new ServerSocket(serverPort);
             socket = new DatagramSocket(udpPort);
@@ -36,10 +39,18 @@ public class Server extends Thread {
                     ClientAddress clientAddress = null;
                     try {
                         ObjectInputStream ois = new ObjectInputStream(clientSocket.getInputStream());
+                        ObjectOutputStream oos = new ObjectOutputStream(clientSocket.getOutputStream());
                         int clientPort = (int) ois.readObject();
                         System.out.println(clientSocket.getInetAddress().toString()+" receive port: "+clientPort);
                         clientAddress = new ClientAddress(clientSocket.getInetAddress(), clientPort);
                         clients.add(clientAddress);
+
+                        // Send client format of audio
+                        oos.writeObject(format.getSampleRate());
+                        oos.writeObject(format.getSampleSizeInBits());
+                        oos.writeObject(format.getChannels());
+                        oos.writeObject(true);
+                        oos.writeObject(format.isBigEndian());
 
                         while (true) {
                             int cmd = ois.readInt();
@@ -70,6 +81,10 @@ public class Server extends Thread {
                 }
             }
         }
+    }
+
+    public void setFormat(AudioFormat format) {
+        this.format = format;
     }
 
     class ClientAddress{
